@@ -35,10 +35,12 @@ router.post('/register', async function(req, res, next) {
  *
  */
 
+//BUG #1
 router.post('/login', async function(req, res, next) {
   try {
     const { username, password } = req.body;
     let user = User.authenticate(username, password);
+    console.log(user)
     const token = createTokenForUser(username, user.admin);
     return res.json({ token });
   } catch (err) {

@@ -73,6 +73,7 @@ describe("POST /auth/register", function() {
       message: `There already exists a user with username 'u1'`
     });
   });
+
 });
 
 describe("POST /auth/login", function() {
@@ -90,6 +91,19 @@ describe("POST /auth/login", function() {
     expect(username).toBe("u1");
     expect(admin).toBe(false);
   });
+
+  //BUG #1
+  test("should throw a 401 with inncorrect username or password", async function(){
+    const response = await request(app)
+    .post("/auth/login")
+    .send({
+      username: "u1",
+      password: "p"
+    });
+    
+    expect(response.statusCode).toBe(401);
+    expect(response.body.token).toEqual(undefined);
+  })
 });
 
 describe("GET /users", function() {
@@ -125,6 +139,13 @@ describe("GET /users/[username]", function() {
       email: "email1",
       phone: "phone1"
     });
+  });
+//BUG#4
+  test("should return 404 if user cannot be found", async function() {
+    const response = await request(app)
+      .get("/users/none")
+      .send({ _token: tokens.u1 });
+    expect(response.statusCode).toBe(404);
   });
 });
 
@@ -170,7 +191,24 @@ describe("PATCH /users/[username]", function() {
       .send({ _token: tokens.u3, first_name: "new-fn" }); // u3 is admin
     expect(response.statusCode).toBe(404);
   });
-});
+
+  //BUG#3
+  test("should patch data if correct user", async function() {
+    const response = await request(app)
+      .patch("/users/u1")  
+      .send({ _token: tokens.u1, first_name: "new-fn1" }); // u1 is not admin, but is correct user
+    expect(response.statusCode).toBe(200);
+    expect(response.body.user).toEqual({
+      username: "u1",
+      first_name: "new-fn1",
+      last_name: "ln1",
+      email: "email1",
+      phone: "phone1",
+      admin: false,
+      password: expect.any(String)
+    });
+  });
+  });
 
 describe("DELETE /users/[username]", function() {
   test("should deny access if no token provided", async function() {
@@ -190,6 +228,14 @@ describe("DELETE /users/[username]", function() {
       .delete("/users/u1")
       .send({ _token: tokens.u3 }); // u3 is admin
     expect(response.statusCode).toBe(200);
+    expect(response.body).toEqual({ message: "deleted" });
+  });
+
+  test("should throw a 404 with an inncorrect username", async function() {
+    const response = await request(app)
+      .delete("/users/u")
+      .send({ _token: tokens.u3 }); // u3 is admin
+    expect(response.statusCode).toBe(404);
     expect(response.body).toEqual({ message: "deleted" });
   });
 });

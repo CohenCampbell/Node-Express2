@@ -34,7 +34,7 @@ router.get('/', authUser, requireLogin, async function(req, res, next) {
  * If user cannot be found, return a 404 err.
  *
  */
-
+//BUG#4
 router.get('/:username', authUser, requireLogin, async function(
   req,
   res,
@@ -62,8 +62,8 @@ router.get('/:username', authUser, requireLogin, async function(
  * other fields (including non-existent ones), an error should be raised.
  *
  */
-
-router.patch('/:username', authUser, requireLogin, requireAdmin, async function(
+//BUG#3
+router.patch('/:username', authUser, requireLogin, requireAdmin , async function(
   req,
   res,
   next
@@ -94,13 +94,10 @@ router.patch('/:username', authUser, requireLogin, requireAdmin, async function(
  * If user cannot be found, return a 404 err.
  */
 
-router.delete('/:username', authUser, requireAdmin, async function(
-  req,
-  res,
-  next
-) {
+//BUG #2
+router.delete('/:username', authUser, requireAdmin, async function(req,res,next) {
   try {
-    User.delete(req.params.username);
+    User.delete(req.params.username)
     return res.json({ message: 'deleted' });
   } catch (err) {
     return next(err);

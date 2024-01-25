@@ -65,7 +65,7 @@ class User {
     );
 
     const user = result.rows[0];
-
+  
     if (user && (await bcrypt.compare(password, user.password))) {
       return user;
     } else {
@@ -111,9 +111,9 @@ class User {
     );
 
     const user = result.rows[0];
-
+      //BUG#4
     if (!user) {
-      new ExpressError('No such user', 404);
+     new ExpressError('No such user', 404);
     }
 
     return user;
@@ -156,6 +156,7 @@ class User {
       'DELETE FROM users WHERE username = $1 RETURNING username',
       [username]
     );
+    console.log(result.rows[0])
     const user = result.rows[0];
 
     if (!user) {
